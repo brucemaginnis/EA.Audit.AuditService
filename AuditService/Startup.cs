@@ -18,7 +18,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
 using AuditService.Infrastructure.Idempotency;
 using System.Collections.Generic;
-using Swashbuckle.AspNetCore.Swagger;
+using Newtonsoft.Json;
+using Microsoft.IdentityModel.Tokens;
+using System.Net;
 
 namespace AuditService
 {
@@ -35,6 +37,7 @@ namespace AuditService
         public void ConfigureServices(IServiceCollection services)
         {
             var jwtSettings = JwtSettings.FromConfiguration(Configuration);
+            services.AddSingleton(jwtSettings);
 
             services.AddDbContext<AuditContext>(options => options.UseMySql(Configuration));
 
@@ -48,11 +51,20 @@ namespace AuditService
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(options =>
                     {
-                        options.Authority = "{yourAuthorizationServerAddress}";
-                        options.Audience = "{yourAudience}";
-                        options.RequireHttpsMetadata = false;
-                        options.TokenValidationParameters = jwtSettings.TokenValidationParameters;
+                        options.Authority = "https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_QtgogH91v";
+                        options.Audience = "3inpv3ubfmag4k97cu5iqsesg8";
+                        options.TokenValidationParameters = new TokenValidationParameters() { ValidateAudience = false };
                     });
+
+            //services.AddCors(options =>
+            //{
+            //    // The CORS policy is open for testing purposes. In a production application, you should restrict it to known origins.
+            //    options.AddPolicy(
+            //        "AllowAll",
+            //        builder => builder.AllowAnyOrigin()
+            //                          .AllowAnyMethod()
+            //                          .AllowAnyHeader());
+            //});
 
             services.AddMvc(opt =>
                 {
@@ -125,7 +137,8 @@ namespace AuditService
                     var logger = serviceScope.ServiceProvider.GetService<ILogger<Program>>();
                     logger.LogError(ex, "An error occurred while seeding the database.");
                 }
-            }                
+            }
+                                   
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
@@ -139,11 +152,10 @@ namespace AuditService
             });
 
             app.UseHttpsRedirection();
-
+            
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
