@@ -3,7 +3,7 @@ using System.Linq;
 using AuditService.Infrastructure;
 using AuditService.Models;
 
-namespace AuditService.Application.Queries
+namespace AuditService.Application.Features.Shared
 { 
     public class PaginationHelpers
     {

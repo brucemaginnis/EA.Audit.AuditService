@@ -1,3 +1,4 @@
+using AuditService.Application.Features.Shared;
 using AuditService.Data;
 using AuditService.Infrastructure.Idempotency;
 using AuditService.Models;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 
 
-namespace AuditService.Application.Commands
+namespace AuditService.Application.Features.Audits.Commands
 {
     public class CreateAuditCommand : IRequest<int>
     {
@@ -20,15 +21,17 @@ namespace AuditService.Application.Commands
 
         }
 
-        public CreateAuditCommand(DateTime dateCreated, int auditTypeId, string source, int auditLevelId, string details)
+        public CreateAuditCommand(DateTime dateCreated, int applicationId, int auditTypeId, string source, int auditLevelId, string details)
         {
             DateCreated = dateCreated;
+            ApplicationId = applicationId;
             AuditTypeId = auditTypeId;
             Source = source;
             AuditLevelId = auditLevelId;
             Details = details;
         }
-        public DateTime DateCreated { get; set; }        
+        public DateTime DateCreated { get; set; }
+        public int ApplicationId { get; set; }
         public int AuditTypeId { get; set; }
         public string Source { get; set; }        
         public int AuditLevelId { get; set; }
@@ -36,9 +39,9 @@ namespace AuditService.Application.Commands
 
     }
 
-     public class Validator : AbstractValidator<CreateAuditCommand>
+     public class CreateAuditValidator : AbstractValidator<CreateAuditCommand>
         {
-            public Validator()
+            public CreateAuditValidator()
             {
                 RuleFor(m => m.Details).NotNull().Length(0, 1000);
                 RuleFor(m => m.Source).NotNull().Length(0, 500);

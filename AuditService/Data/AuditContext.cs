@@ -1,6 +1,7 @@
 using System.Data;
 using System.Threading.Tasks;
 using AuditService.Infrastructure.Idempotency;
+using AuditService.Model.Admin;
 using AuditService.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -15,7 +16,9 @@ namespace AuditService.Data
         public DbSet<AuditLevel> AuditLevels { get; set; }
         public DbSet<AuditType> AuditTypes { get; set; }
         public DbSet<ClientRequest> ClientRequests { get; set; }
-        
+
+        public DbSet<AuditApplication> AuditApplications { get; set; }
+
 
         public AuditContext(DbContextOptions<AuditContext> options)
             :base(options)

@@ -1,4 +1,5 @@
-﻿using AuditService.Application.Commands;
+﻿using AuditService.Application.Features.Audits.Commands;
+using AuditService.Application.Features.Shared;
 using AuditService.Infrastructure.Idempotency;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -75,6 +76,7 @@ namespace AuditServiceTests.Application
         {
             return new CreateAuditCommand(
                 dateCreated: args != null && args.ContainsKey("dateCreated") ? (DateTime)args["dateCreated"] : DateTime.UtcNow,
+                applicationId: args != null && args.ContainsKey("applicationId") ? (int)args["applicationId"] : 0,
                 auditLevelId: args != null && args.ContainsKey("auditLevelId") ? (int)args["auditLevelId"] : 0,
                 source: args != null && args.ContainsKey("source") ? (string)args["source"] : null,
                 auditTypeId: args != null && args.ContainsKey("auditTypeId") ? (int)args["auditTypeId"] : 0,

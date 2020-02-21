@@ -1,6 +1,5 @@
 using System;
-using AuditService.Application.Queries;
-using AuditService.Controllers;
+using AuditService.Application.Features.Shared;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace AuditService.Infrastructure

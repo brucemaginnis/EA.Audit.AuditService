@@ -1,5 +1,6 @@
-﻿using AuditService.Application.Commands;
-using AuditService.Application.Queries;
+﻿using AuditService.Application.Features.Audits.Commands;
+using AuditService.Application.Features.Audits.Queries;
+using AuditService.Application.Features.Shared;
 using AuditService.Controllers;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -83,7 +84,7 @@ namespace AuditServiceTests
 
             //Act
             var auditController = new AuditController(_loggerMock.Object, _mediatorMock.Object);
-            var actionResult = await auditController.GetAudit(10) as OkObjectResult;
+            var actionResult = await auditController.GetAuditAsync(10) as OkObjectResult;
 
             //Assert
             Assert.AreEqual((actionResult as OkObjectResult).StatusCode, (int)System.Net.HttpStatusCode.OK);

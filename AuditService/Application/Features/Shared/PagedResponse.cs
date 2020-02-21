@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace AuditService.Application.Queries
+namespace AuditService.Application.Features.Shared
 {
     public class PagedResponse<T>
     {

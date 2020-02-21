@@ -1,4 +1,4 @@
-namespace AuditService.Application.Queries
+namespace AuditService.Application.Features.Shared
 { 
     public class PaginationQuery
     {

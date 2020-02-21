@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using System;
 
-namespace AuditService.Application.Commands
+namespace AuditService.Application.Features.Shared
 {
     public class IdentifiedCommand<T, R> : IRequest<R>
         where T : IRequest<R>

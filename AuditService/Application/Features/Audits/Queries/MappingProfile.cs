@@ -1,7 +1,7 @@
 using AuditService.Models;
 using AutoMapper;
 
-namespace AuditService.Application.Queries
+namespace AuditService.Application.Features.Audits.Queries
 {
     public class MappingProfile : Profile
     {

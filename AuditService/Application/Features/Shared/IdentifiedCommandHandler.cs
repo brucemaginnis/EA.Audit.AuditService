@@ -1,11 +1,12 @@
 ﻿using AuditService.Application.Extensions;
+using AuditService.Application.Features.Audits.Commands;
 using AuditService.Infrastructure.Idempotency;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AuditService.Application.Commands
+namespace AuditService.Application.Features.Shared
 {
     public class IdentifiedCommandHandler<T, R> : IRequestHandler<IdentifiedCommand<T, R>, R>
         where T : IRequest<R>

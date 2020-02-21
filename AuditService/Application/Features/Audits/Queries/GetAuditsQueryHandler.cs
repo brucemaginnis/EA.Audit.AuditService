@@ -5,8 +5,9 @@ using MediatR;
 using AutoMapper;
 using AuditService.Models;
 using AuditService.Infrastructure;
+using AuditService.Application.Features.Shared;
 
-namespace AuditService.Application.Queries
+namespace AuditService.Application.Features.Audits.Queries
 { 
     public class GetAuditsQuery : IRequest<PagedResponse<AuditDto>>
     { 

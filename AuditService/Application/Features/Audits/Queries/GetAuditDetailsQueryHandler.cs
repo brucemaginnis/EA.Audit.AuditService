@@ -4,7 +4,7 @@ using AuditService.Data;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace AuditService.Application.Queries
+namespace AuditService.Application.Features.Audits.Queries
 {
     public class GetAuditDetailsQuery : IRequest<AuditDto>
     { 
@@ -23,7 +23,10 @@ namespace AuditService.Application.Queries
 
         protected override AuditDto Handle(GetAuditDetailsQuery message)
         {
-            return _mapper.Map<AuditDto>(_dbContext.Audits.Include(a => a.AuditLevel).Include(a => a.AuditType).FirstOrDefault(a => a.Id == message.Id));
+            return _mapper.Map<AuditDto>(_dbContext.Audits.Include(a => a.AuditApplication)
+                                                            .Include(a => a.AuditLevel)
+                                                            .Include(a => a.AuditType)
+                                                            .FirstOrDefault(a => a.Id == message.Id));
         }
     }
 }
