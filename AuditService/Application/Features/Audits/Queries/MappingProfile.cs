@@ -9,6 +9,7 @@ namespace AuditService.Application.Features.Audits.Queries
         {
             CreateMap<Audit, AuditDto>();
             CreateMap<GetAuditsQuery,PaginationFilter>();
+            CreateMap<SearchAuditsQuery, PaginationFilter>();
         }
     }
 }

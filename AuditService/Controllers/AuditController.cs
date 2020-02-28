@@ -70,7 +70,16 @@ namespace AuditService.Controllers
             }
 
             return Ok(commandResult);
-        }  
-        
+        }
+
+
+        [HttpGet(ApiRoutes.Audits.Search)]
+        /*[Authorize]*/
+        public async Task<ActionResult> SearchAuditsAsync([FromQuery]SearchAuditsQuery request)
+        {
+            var audits = await _mediator.Send(request).ConfigureAwait(false);
+            return Ok(audits);
+        }
+
     }     
 }

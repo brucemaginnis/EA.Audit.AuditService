@@ -11,6 +11,7 @@ namespace AuditService.Infrastructure
             public const string GetAll = Base + "/audits";
             public const string Get = Base + "/audits/{id}";
             public const string Create = Base + "/audits";
+            public const string Search = Base + "/audits/search";
         }
 
         public static class AuditApplications
