@@ -4,14 +4,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AuditService.Models
 {
-    public class Audit : IEntity
+    public class Audit : BaseEntity
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("AuditID")]
-        public int Id { get; set; }
+        public new int Id { get; set; }
         public int ApplicationId { get; set; }
-        public AuditApplication AuditApplication { get; set; }
-        public DateTime DateCreated { get; set; }        
+        public AuditApplication AuditApplication { get; set; }   
         public int AuditTypeId { get; set; }
         public AuditType AuditType { get; set; }
         public string Source { get; set; }        

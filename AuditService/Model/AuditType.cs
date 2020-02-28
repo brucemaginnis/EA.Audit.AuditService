@@ -2,10 +2,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AuditService.Models
 {
-    public class AuditType : IEntity
+    public class AuditType : BaseEntity
     {
         [Column("AuditTypeID")]
-        public int Id { get; set; }
+        public new int Id { get; set; }
         public string Description { get; set; }
     }
 }

@@ -6,6 +6,7 @@ using AutoMapper;
 using AuditService.Models;
 using AuditService.Infrastructure;
 using AuditService.Application.Features.Shared;
+using AuditService.Application.Extensions;
 
 namespace AuditService.Application.Features.Audits.Queries
 { 
@@ -31,8 +32,8 @@ namespace AuditService.Application.Features.Audits.Queries
         private readonly IMapper _mapper;
         private readonly IUriService _uriService;
 
-        public GetAuditsQueryHandler(AuditContext dbContext, IMapper mapper, IUriService uriService){
-            _dbContext = dbContext;
+        public GetAuditsQueryHandler(IAuditContextFactory dbContextFactory, IMapper mapper, IUriService uriService){
+            _dbContext = dbContextFactory.AuditContext;
             _mapper = mapper;
             _uriService = uriService;
         }       
@@ -46,8 +47,10 @@ namespace AuditService.Application.Features.Audits.Queries
             }
 
             var pagination = _mapper.Map<PaginationFilter>(request);
-            
-            var skip = (request.PageNumber - 1) * request.PageSize;
+
+
+            var skip = (request.PageNumber) * request.PageSize;
+
             var audits = _mapper.ProjectTo<AuditDto>(_dbContext.Audits).OrderBy(a => a.Id)
                 .Skip(skip).Take(request.PageSize).ToList();
 

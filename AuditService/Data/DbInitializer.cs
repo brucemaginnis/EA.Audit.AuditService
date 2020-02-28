@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using AuditService.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace AuditService.Data
 {
@@ -9,9 +10,9 @@ namespace AuditService.Data
         public static void Initialize(AuditContext context)
         {
             context.Database.EnsureCreated();
-            
-             // Look for any audits.
-            if (context.Audits.Any())
+
+            // Look for any audits.
+            if (context.Audits.IgnoreQueryFilters().Any())
             {
                 return;   // DB has been seeded
             }

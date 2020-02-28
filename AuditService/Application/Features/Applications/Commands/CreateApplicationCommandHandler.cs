@@ -46,9 +46,9 @@ namespace AuditService.Application.Commands
         private readonly AuditContext _dbContext;
         private readonly IMapper _mapper;
 
-        public CreateApplicationCommandHandler(AuditContext dbContext, IMapper mapper)
+        public CreateApplicationCommandHandler(IAuditContextFactory dbContextFactory, IMapper mapper)
         {
-            _dbContext = dbContext;
+            _dbContext = dbContextFactory.AuditContext;
             _mapper = mapper;
         }
 
@@ -58,7 +58,7 @@ namespace AuditService.Application.Commands
 
             _dbContext.AuditApplications.Add(app);
 
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync().ConfigureAwait(false);
 
             return app.Id;
         }

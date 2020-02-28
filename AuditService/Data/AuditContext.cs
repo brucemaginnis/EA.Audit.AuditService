@@ -1,4 +1,7 @@
+using System;
 using System.Data;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AuditService.Infrastructure.Idempotency;
 using AuditService.Model.Admin;
@@ -11,6 +14,8 @@ namespace AuditService.Data
 
     public class AuditContext : DbContext 
     {
+        private readonly Guid _tenantId;
+
         private IDbContextTransaction _currentTransaction;
         public DbSet<Audit> Audits { get; set; }
         public DbSet<AuditLevel> AuditLevels { get; set; }
@@ -19,11 +24,27 @@ namespace AuditService.Data
 
         public DbSet<AuditApplication> AuditApplications { get; set; }
 
+        public AuditContext(DbContextOptions<AuditContext> options, Guid tenantId)
+            : base(options)
+        {
+            _tenantId = tenantId;
+        }
 
         public AuditContext(DbContextOptions<AuditContext> options)
             :base(options)
         {
             ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Audit>().Property<Guid>("_tenantId").HasColumnName("TenantId");
+            modelBuilder.Entity<Audit>().HasQueryFilter(b => EF.Property<Guid>(b, "_tenantId") == _tenantId);
+
+            modelBuilder.Entity<AuditApplication>().Property<Guid>("_tenantId").HasColumnName("TenantId");
+            modelBuilder.Entity<AuditApplication>().HasQueryFilter(b => EF.Property<Guid>(b, "_tenantId") == _tenantId);
+
+            base.OnModelCreating(modelBuilder);
         }
 
         public async Task BeginTransactionAsync()
@@ -34,6 +55,33 @@ namespace AuditService.Data
             }
 
             _currentTransaction = await Database.BeginTransactionAsync(IsolationLevel.ReadCommitted).ConfigureAwait(false);
+        }
+
+        public async override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+            var entries = ChangeTracker
+                .Entries()
+                .Where(e => e.Entity is BaseEntity && (
+                                e.State == EntityState.Added
+                                || e.State == EntityState.Modified));
+
+            foreach (var entityEntry in entries)
+            {
+                ((BaseEntity)entityEntry.Entity).DateModified = DateTime.Now;
+
+                if (entityEntry.State != EntityState.Added) continue;
+
+                ((BaseEntity)entityEntry.Entity).DateCreated = DateTime.Now;
+
+                if (entityEntry.Metadata.GetProperties().Any(p => p.Name == "_tenantId"))
+                    entityEntry.CurrentValues["_tenantId"] = _tenantId;
+            }
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        public override int SaveChanges()
+        {
+            return SaveChangesAsync().GetAwaiter().GetResult();
         }
 
         public async Task CommitTransactionAsync()

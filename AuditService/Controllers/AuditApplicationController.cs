@@ -13,6 +13,7 @@ namespace AuditService.Controllers
 {
     [ApiController]
     [Produces("application/json")]
+    [AllowCrossSiteJson]
     public class AuditApplicationController : ControllerBase
     {
         private readonly ILogger<AuditApplicationController> _logger;
@@ -36,7 +37,7 @@ namespace AuditService.Controllers
         /*[Authorize]*/
         public async Task<ActionResult> GetAuditApplicationAsync(int id)
         {
-            var audit = await _mediator.Send(new GetAuditApplicationDetailsQuery() { Id = id });
+            var audit = await _mediator.Send(new GetAuditApplicationDetailsQuery() { Id = id }).ConfigureAwait(false);
             return Ok(audit);
         }
 
@@ -55,7 +56,7 @@ namespace AuditService.Controllers
                     requestCreateAuditApplication.GetGenericTypeName(),
                     requestCreateAuditApplication);
 
-                commandResult = await _mediator.Send(requestCreateAuditApplication);
+                commandResult = await _mediator.Send(requestCreateAuditApplication).ConfigureAwait(false);
             }
 
             if (commandResult == -1)

@@ -1,4 +1,5 @@
-﻿using AuditService.Application.Features.Shared;
+﻿using AuditService.Application.Extensions;
+using AuditService.Application.Features.Shared;
 using AuditService.Data;
 using AuditService.Infrastructure;
 using AuditService.Models;
@@ -30,9 +31,9 @@ namespace AuditService.Application.Features.Application.Queries
         private readonly IMapper _mapper;
         private readonly IUriService _uriService;
 
-        public GetApplicationsQueryHandler(AuditContext dbContext, IMapper mapper, IUriService uriService)
+        public GetApplicationsQueryHandler(IAuditContextFactory dbContextFactory, IMapper mapper, IUriService uriService)
         {
-            _dbContext = dbContext;
+            _dbContext = dbContextFactory.AuditContext;
             _mapper = mapper;
             _uriService = uriService;
         }
@@ -47,7 +48,10 @@ namespace AuditService.Application.Features.Application.Queries
 
             var pagination = _mapper.Map<PaginationFilter>(request);
 
-            var skip = (request.PageNumber - 1) * request.PageSize;
+            var skip = (request.PageNumber) * request.PageSize;
+            var query = _mapper.ProjectTo<ApplicationDto>(_dbContext.AuditApplications).OrderBy(a => a.Id)
+                .Skip(skip).Take(request.PageSize).ToSql();
+
             var audits = _mapper.ProjectTo<ApplicationDto>(_dbContext.AuditApplications).OrderBy(a => a.Id)
                 .Skip(skip).Take(request.PageSize).ToList();
 

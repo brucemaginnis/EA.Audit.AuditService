@@ -16,8 +16,8 @@ namespace AuditService.Application.Features.Audits.Queries
         private readonly AuditContext _dbContext;
         private readonly IMapper _mapper;
 
-        public GetAuditDetailsQueryHandler(AuditContext dbContext, IMapper mapper){
-            _dbContext = dbContext;
+        public GetAuditDetailsQueryHandler(IAuditContextFactory dbContextFactory, IMapper mapper){
+            _dbContext = dbContextFactory.AuditContext;
             _mapper = mapper;
         }    
 

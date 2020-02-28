@@ -1,6 +1,5 @@
 using AuditService.Infrastructure;
 using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -18,9 +17,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
 using AuditService.Infrastructure.Idempotency;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Net;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using AuditService.Infrastructure.Behaviours;
 
 namespace AuditService
 {
@@ -38,13 +38,51 @@ namespace AuditService
         {
             var jwtSettings = JwtSettings.FromConfiguration(Configuration);
             services.AddSingleton(jwtSettings);
-
-            services.AddDbContext<AuditContext>(options => options.UseMySql(Configuration));
-
+            
             services.AddAutoMapper(typeof(Startup).GetTypeInfo().Assembly);
             services.AddMediatR(typeof(Startup).GetTypeInfo().Assembly);
             services.AddControllers();
             
+
+            ConfigureAuthentication(services);
+            ConfigureAuditContext(services);
+            ConfigureSwagger(services);
+
+
+            services.AddCors(options =>
+            {
+                // The CORS policy is open for testing purposes. In a production application, you should restrict it to known origins.
+                options.AddPolicy(
+                    "AllowAll",
+                    builder => builder.AllowAnyOrigin()
+                                      .AllowAnyMethod()
+                                      .AllowAnyHeader());
+            });
+
+            services.AddMvc(opt =>
+                {
+                    opt.Filters.Add(typeof(ValidatorActionFilter));
+                }).AddFluentValidation(cfg => { cfg.RegisterValidatorsFromAssemblyContaining<Startup>(); });
+
+
+            
+            services.AddSingleton<IUriService>(provider =>
+            {
+                var accessor = provider.GetRequiredService<IHttpContextAccessor>();
+                var request = accessor.HttpContext.Request;
+                var absoluteUri = string.Concat(request.Scheme, "://", request.Host.ToUriComponent(), "/");
+                return new UriService(absoluteUri);
+            });
+
+            services.AddScoped<IRequestManager, RequestManager>();
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+            services.AddTransient<IAuditContextFactory, AuditContextFacotry>();
+
+        }
+
+        private void ConfigureAuthentication(IServiceCollection services)
+        {
+            /*
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -55,26 +93,15 @@ namespace AuditService
                         options.Audience = "3inpv3ubfmag4k97cu5iqsesg8";
                         options.TokenValidationParameters = new TokenValidationParameters() { ValidateAudience = false };
                     });
+                    */
+        }
 
-            //services.AddCors(options =>
-            //{
-            //    // The CORS policy is open for testing purposes. In a production application, you should restrict it to known origins.
-            //    options.AddPolicy(
-            //        "AllowAll",
-            //        builder => builder.AllowAnyOrigin()
-            //                          .AllowAnyMethod()
-            //                          .AllowAnyHeader());
-            //});
-
-            services.AddMvc(opt =>
-                {
-                    opt.Filters.Add(typeof(ValidatorActionFilter));
-                }).AddFluentValidation(cfg => { cfg.RegisterValidatorsFromAssemblyContaining<Startup>(); });
-            
-             // Register the Swagger generator, defining 1 or more Swagger documents
+        private void ConfigureSwagger(IServiceCollection services)
+        {
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Audit Service", Version = "v1" });
+                c.OperationFilter<TenantHeaderFilter>();
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "JWT Authorization header using the bearer scheme",
@@ -101,21 +128,23 @@ namespace AuditService
                         new List<string>()
                     }
                 });
-            }); 
-
-            services.AddSingleton<IUriService>(provider =>
-            {
-                var accessor = provider.GetRequiredService<IHttpContextAccessor>();
-                var request = accessor.HttpContext.Request;
-                var absoluteUri = string.Concat(request.Scheme, "://", request.Host.ToUriComponent(), "/");
-                return new UriService(absoluteUri);
             });
-
-            services.AddScoped<IRequestManager, RequestManager>();
 
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        private void ConfigureAuditContext(IServiceCollection services)
+        {
+            services.AddDbContext<AuditContext>(options => options.UseMySql(Configuration));
+
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.TryAddSingleton(sp =>
+            {
+                var builder = new DbContextOptionsBuilder<AuditContext>();
+                return builder.UseMySql(Configuration).Options;
+            });
+        }
+
+            // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {          
             
@@ -127,7 +156,10 @@ namespace AuditService
             using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
                 var context = serviceScope.ServiceProvider.GetService<AuditContext>();
-                context.Database.Migrate();
+                if (!context.Database.ProviderName.Contains("Microsoft.EntityFrameworkCore.InMemory"))
+                {
+                    context.Database.Migrate();
+                }
                 
                 try{
                     DbInitializer.Initialize(context);
@@ -140,11 +172,7 @@ namespace AuditService
             }
                                    
 
-            // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
-
-            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
-            // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Audit Service V1");
