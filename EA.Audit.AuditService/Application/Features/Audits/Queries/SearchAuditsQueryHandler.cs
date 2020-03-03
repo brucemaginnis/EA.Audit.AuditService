@@ -6,6 +6,7 @@ using EA.Audit.AuditService.Models;
 using AutoMapper;
 using MediatR;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace EA.Audit.AuditService.Application.Features.Audits.Queries
 {
@@ -35,12 +36,14 @@ namespace EA.Audit.AuditService.Application.Features.Audits.Queries
         private readonly AuditContext _dbContext;
         private readonly IMapper _mapper;
         private readonly IUriService _uriService;
+        private readonly ILogger<SearchAuditsQueryHandler> _logger;
 
-        public SearchAuditsQueryHandler(IAuditContextFactory dbContextFactory, IMapper mapper, IUriService uriService)
+        public SearchAuditsQueryHandler(IAuditContextFactory dbContextFactory, IMapper mapper, IUriService uriService, ILogger<SearchAuditsQueryHandler> logger)
         {
             _dbContext = dbContextFactory.AuditContext;
             _mapper = mapper;
             _uriService = uriService;
+            _logger = logger;
         }
 
         protected override PagedResponse<AuditDto> Handle(SearchAuditsQuery request)
@@ -50,6 +53,11 @@ namespace EA.Audit.AuditService.Application.Features.Audits.Queries
                 var response = _mapper.ProjectTo<AuditDto>(_dbContext.Audits).OrderBy(a => a.Id).ToList();
                 return new PagedResponse<AuditDto>(response);
             }
+
+            _logger.LogInformation(
+                       "----- Handling query: {RequestName} - ({@Request})",
+                       request.GetGenericTypeName(),
+                       request);
 
             var pagination = _mapper.Map<PaginationFilter>(request);
 

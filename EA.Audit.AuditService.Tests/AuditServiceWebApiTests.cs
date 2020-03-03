@@ -11,7 +11,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EA.Audit.AuditServiceTests
+namespace EA.Audit.AuditService.Tests
 {
     [TestFixture]
     public class AuditServiceWebApiTests

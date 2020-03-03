@@ -21,6 +21,20 @@ namespace EA.Audit.AuditService.Infrastructure
             public const string Create = Base + "/applications";
         }
 
+        public static class AuditLevels
+        {
+            public const string GetAll = Base + "/auditlevels";
+            public const string Get = Base + "/auditlevels/{id}";
+            public const string Create = Base + "/auditlevels";
+        }
+
+        public static class AuditTypes
+        {
+            public const string GetAll = Base + "/audittypes";
+            public const string Get = Base + "/audittypes/{id}";
+            public const string Create = Base + "/audittypes";
+        }
+
 
     }
 

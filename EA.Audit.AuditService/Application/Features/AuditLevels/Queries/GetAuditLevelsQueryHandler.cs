@@ -8,16 +8,16 @@ using MediatR;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 
-namespace EA.Audit.AuditService.Application.Features.Application.Queries
+namespace EA.Audit.AuditService.Application.Features.AuditLevels.Queries
 {
-    public class GetAuditApplicationsQuery : IRequest<PagedResponse<ApplicationDto>>
+    public class GetAuditLevelsQuery : IRequest<PagedResponse<AuditLevelDto>>
     {
-        public GetAuditApplicationsQuery()
+        public GetAuditLevelsQuery()
         {
             PageNumber = 1;
             PageSize = 100;
         }
-        public GetAuditApplicationsQuery(int pageNumber, int pageSize)
+        public GetAuditLevelsQuery(int pageNumber, int pageSize)
         {
             PageNumber = pageNumber;
             PageSize = pageSize;
@@ -26,14 +26,14 @@ namespace EA.Audit.AuditService.Application.Features.Application.Queries
         public int PageSize { get; set; }
     }
 
-    public class GetAuditApplicationQueryHandler : RequestHandler<GetAuditApplicationsQuery, PagedResponse<ApplicationDto>>
+    public class GetAuditTypesQueryHandler : RequestHandler<GetAuditLevelsQuery, PagedResponse<AuditLevelDto>>
     {
         private readonly AuditContext _dbContext;
         private readonly IMapper _mapper;
         private readonly IUriService _uriService;
-        private readonly ILogger<GetAuditApplicationQueryHandler> _logger;
+        private readonly ILogger<GetAuditTypesQueryHandler> _logger;
 
-        public GetAuditApplicationQueryHandler(IAuditContextFactory dbContextFactory, IMapper mapper, IUriService uriService, ILogger<GetAuditApplicationQueryHandler> logger)
+        public GetAuditTypesQueryHandler(IAuditContextFactory dbContextFactory, IMapper mapper, IUriService uriService, ILogger<GetAuditTypesQueryHandler> logger)
         {
             _dbContext = dbContextFactory.AuditContext;
             _mapper = mapper;
@@ -41,12 +41,12 @@ namespace EA.Audit.AuditService.Application.Features.Application.Queries
             _logger = logger;
         }
 
-        protected override PagedResponse<ApplicationDto> Handle(GetAuditApplicationsQuery request)
+        protected override PagedResponse<AuditLevelDto> Handle(GetAuditLevelsQuery request)
         {
             if (request == null)
             {
-                var response = _mapper.ProjectTo<ApplicationDto>(_dbContext.AuditApplications).OrderBy(a => a.Id).ToList();
-                return new PagedResponse<ApplicationDto>(response);
+                var response = _mapper.ProjectTo<AuditLevelDto>(_dbContext.AuditLevels).OrderBy(a => a.Id).ToList();
+                return new PagedResponse<AuditLevelDto>(response);
             }
 
             _logger.LogInformation(
@@ -57,10 +57,10 @@ namespace EA.Audit.AuditService.Application.Features.Application.Queries
             var pagination = _mapper.Map<PaginationFilter>(request);
 
             var skip = (request.PageNumber) * request.PageSize;
-            var query = _mapper.ProjectTo<ApplicationDto>(_dbContext.AuditApplications).OrderBy(a => a.Id)
+            var query = _mapper.ProjectTo<AuditLevelDto>(_dbContext.AuditLevels).OrderBy(a => a.Id)
                 .Skip(skip).Take(request.PageSize).ToSql();
 
-            var audits = _mapper.ProjectTo<ApplicationDto>(_dbContext.AuditApplications).OrderBy(a => a.Id)
+            var audits = _mapper.ProjectTo<AuditLevelDto>(_dbContext.AuditLevels).OrderBy(a => a.Id)
                 .Skip(skip).Take(request.PageSize).ToList();
 
             var paginationResponse = PaginationHelpers.CreatePaginatedResponse(_uriService, pagination, audits);

@@ -14,9 +14,12 @@ using System.Threading.Tasks;
 
 namespace EA.Audit.AuditService.Application.Features.Audits.Commands
 {
-    /**********************************************************************
-     * CONSIDER PULLING INTO SEPARATE API FOR SCALING INDEPENDENT OF READ
-     * ********************************************************************/
+    /********************************************************************************
+     * CONSIDER PULLING INTO SEPARATE API FOR SCALING INDEPENDENT OF READ (True CQRS)
+     * SHOULD BE STATELESS i.e. only writing to the queue
+     * A SEPARATE BACKGROUND PROCESS SHOULD READ FROM THE QUEUE AND
+     * PERSIST TO THE MYSQL DB (Don't yet have Queues in PaaS...or the expected loads)
+     * ******************************************************************************/
     public class CreateAuditCommand : IRequest<int>
     {
         public CreateAuditCommand()

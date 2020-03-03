@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using EA.Audit.AuditService.Data;
 using MediatR;
@@ -7,6 +6,7 @@ using EA.Audit.AuditService.Models;
 using EA.Audit.AuditService.Infrastructure;
 using EA.Audit.AuditService.Application.Features.Shared;
 using EA.Audit.AuditService.Application.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace EA.Audit.AuditService.Application.Features.Audits.Queries
 { 
@@ -31,15 +31,23 @@ namespace EA.Audit.AuditService.Application.Features.Audits.Queries
         private readonly AuditContext _dbContext;
         private readonly IMapper _mapper;
         private readonly IUriService _uriService;
+        private readonly ILogger<GetAuditsQueryHandler> _logger;
 
-        public GetAuditsQueryHandler(IAuditContextFactory dbContextFactory, IMapper mapper, IUriService uriService){
+        public GetAuditsQueryHandler(IAuditContextFactory dbContextFactory, IMapper mapper, IUriService uriService, ILogger<GetAuditsQueryHandler> logger)
+        {
             _dbContext = dbContextFactory.AuditContext;
             _mapper = mapper;
             _uriService = uriService;
+            _logger = logger;
         }       
 
         protected override PagedResponse<AuditDto> Handle(GetAuditsQuery request)
         {
+            _logger.LogInformation(
+                        "----- Handling query: {RequestName} - ({@Request})",
+                        request.GetGenericTypeName(),
+                        request);
+
             if (request == null)
             {
                 var response = _mapper.ProjectTo<AuditDto>(_dbContext.Audits).OrderBy(a => a.Id).ToList();

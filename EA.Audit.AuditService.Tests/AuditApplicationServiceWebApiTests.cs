@@ -75,7 +75,7 @@ namespace EA.Audit.AuditService.Tests
         }
 
         [Test]
-        public async Task Get_audit_success()
+        public async Task Get_application_success()
         {
             //Arrange
             var fakeDynamicResult = new ApplicationDto();

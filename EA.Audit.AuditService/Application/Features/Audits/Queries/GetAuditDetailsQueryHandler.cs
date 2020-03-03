@@ -3,6 +3,8 @@ using System.Linq;
 using EA.Audit.AuditService.Data;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using EA.Audit.AuditService.Application.Extensions;
 
 namespace EA.Audit.AuditService.Application.Features.Audits.Queries
 {
@@ -15,18 +17,26 @@ namespace EA.Audit.AuditService.Application.Features.Audits.Queries
     {
         private readonly AuditContext _dbContext;
         private readonly IMapper _mapper;
+        private readonly ILogger<GetAuditDetailsQueryHandler> _logger;
 
-        public GetAuditDetailsQueryHandler(IAuditContextFactory dbContextFactory, IMapper mapper){
+        public GetAuditDetailsQueryHandler(IAuditContextFactory dbContextFactory, IMapper mapper, ILogger<GetAuditDetailsQueryHandler> logger)
+        {
             _dbContext = dbContextFactory.AuditContext;
             _mapper = mapper;
+            _logger = logger;
         }    
 
-        protected override AuditDto Handle(GetAuditDetailsQuery message)
+        protected override AuditDto Handle(GetAuditDetailsQuery request)
         {
+            _logger.LogInformation(
+            "----- Handling query: {RequestName} - ({@Request})",
+            request.GetGenericTypeName(),
+            request);
+
             return _mapper.Map<AuditDto>(_dbContext.Audits.Include(a => a.AuditApplication)
                                                             .Include(a => a.AuditLevel)
                                                             .Include(a => a.AuditType)
-                                                            .FirstOrDefault(a => a.Id == message.Id));
+                                                            .FirstOrDefault(a => a.Id == request.Id));
         }
     }
 }
