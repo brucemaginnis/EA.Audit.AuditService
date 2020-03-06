@@ -6,9 +6,10 @@ namespace EA.Audit.AuditService.Application.Features.Shared
     {
         public PagedResponse(){}
 
-        public PagedResponse(IEnumerable<T> data)
+        public PagedResponse(IEnumerable<T> data, int total)
         {
             Data = data;
+            Total = total;
         }
 
         public IEnumerable<T> Data { get; set; }
@@ -16,5 +17,6 @@ namespace EA.Audit.AuditService.Application.Features.Shared
         public int? PageSize { get; set; }
         public string NextPage { get; set; }
         public string PreviousPage { get; set; }
+        public int? Total { get; set; }
     }
 }

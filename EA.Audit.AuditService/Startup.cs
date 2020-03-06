@@ -21,6 +21,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using EA.Audit.AuditService.Infrastructure.Behaviours;
+using EA.Audit.AuditService.Infrastructure.Auth;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EA.Audit.AuditService
 {
@@ -41,30 +43,16 @@ namespace EA.Audit.AuditService
             
             services.AddAutoMapper(typeof(Startup).GetTypeInfo().Assembly);
             services.AddMediatR(typeof(Startup).GetTypeInfo().Assembly);
-            services.AddControllers();
-            
+            services.AddControllers();            
 
             ConfigureAuthentication(services);
             ConfigureAuditContext(services);
-            ConfigureSwagger(services);
-
-
-            services.AddCors(options =>
-            {
-                // The CORS policy is open for testing purposes. In a production application, you should restrict it to known origins.
-                options.AddPolicy(
-                    "AllowAll",
-                    builder => builder.AllowAnyOrigin()
-                                      .AllowAnyMethod()
-                                      .AllowAnyHeader());
-            });
+            ConfigureSwagger(services);        
 
             services.AddMvc(opt =>
                 {
                     opt.Filters.Add(typeof(ValidatorActionFilter));
                 }).AddFluentValidation(cfg => { cfg.RegisterValidatorsFromAssemblyContaining<Startup>(); });
-
-
             
             services.AddSingleton<IUriService>(provider =>
             {
@@ -82,18 +70,29 @@ namespace EA.Audit.AuditService
 
         private void ConfigureAuthentication(IServiceCollection services)
         {
-            /*
+            string authdomain = "https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_QtgogH91v";
+
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(options =>
                     {
-                        options.Authority = "https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_QtgogH91v";
-                        options.Audience = "3inpv3ubfmag4k97cu5iqsesg8";
+                        options.Authority = authdomain;
+                        //options.Audience = "3inpv3ubfmag4k97cu5iqsesg8";
                         options.TokenValidationParameters = new TokenValidationParameters() { ValidateAudience = false };
                     });
-                    */
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("audit-api/read_audits", policy => policy.Requirements.Add(new HasScopeRequirement("audit-api/read_audits", authdomain)));
+                options.AddPolicy("audit-api/create_audit", policy => policy.Requirements.Add(new HasScopeRequirement("audit-api/create_audit", authdomain)));
+                options.AddPolicy("audit-api/audit_admin", policy => policy.Requirements.Add(new HasScopeRequirement("audit-api/audit_admin", authdomain)));
+            });
+
+            // register the scope authorization handler
+            services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
+
         }
 
         private void ConfigureSwagger(IServiceCollection services)
@@ -101,7 +100,6 @@ namespace EA.Audit.AuditService
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Audit Service", Version = "v1" });
-                c.OperationFilter<TenantHeaderFilter>();
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "JWT Authorization header using the bearer scheme",
@@ -170,7 +168,12 @@ namespace EA.Audit.AuditService
                     logger.LogError(ex, "An error occurred while seeding the database.");
                 }
             }
-                                   
+
+            //Disable/refine in Production
+            app.UseCors(builder => builder
+                        .AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>

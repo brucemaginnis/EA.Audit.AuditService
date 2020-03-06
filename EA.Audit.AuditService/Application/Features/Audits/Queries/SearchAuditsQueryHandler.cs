@@ -48,10 +48,12 @@ namespace EA.Audit.AuditService.Application.Features.Audits.Queries
 
         protected override PagedResponse<AuditDto> Handle(SearchAuditsQuery request)
         {
+            int total = 0;
             if (request == null)
             {
                 var response = _mapper.ProjectTo<AuditDto>(_dbContext.Audits).OrderBy(a => a.Id).ToList();
-                return new PagedResponse<AuditDto>(response);
+                total = _dbContext.Audits.Count();
+                return new PagedResponse<AuditDto>(response, total);
             }
 
             _logger.LogInformation(
@@ -63,19 +65,15 @@ namespace EA.Audit.AuditService.Application.Features.Audits.Queries
 
             var skip = (request.PageNumber) * request.PageSize;
 
-            var query = _mapper.ProjectTo<AuditDto>(_dbContext.Audits)
-                .Where(a => string.IsNullOrEmpty(request.DetailsContains) || a.Details.Contains(request.DetailsContains))
-                .Where(a => string.IsNullOrEmpty(request.SourceContains) || a.Source.Contains(request.SourceContains))
-                .OrderBy(a => a.Id)
-                .Skip(skip).Take(request.PageSize).ToSql();
-
             var audits = _mapper.ProjectTo<AuditDto>(_dbContext.Audits)
                 .Where(a => string.IsNullOrEmpty(request.DetailsContains) || a.Details.Contains(request.DetailsContains))
                 .Where(a => string.IsNullOrEmpty(request.SourceContains) || a.Source.Contains(request.SourceContains))
                 .OrderBy(a => a.Id)
                 .Skip(skip).Take(request.PageSize).ToList();
 
-            var paginationResponse = PaginationHelpers.CreatePaginatedResponse(_uriService, pagination, audits);
+            total = _dbContext.Audits.Count();
+
+            var paginationResponse = PaginationHelpers.CreatePaginatedResponse(_uriService, pagination, audits, total);
 
             return paginationResponse;
 

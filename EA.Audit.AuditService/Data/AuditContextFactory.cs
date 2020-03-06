@@ -1,14 +1,14 @@
-﻿using EA.Audit.AuditService.Infrastructure;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 
 namespace EA.Audit.AuditService.Data
 {
     public class AuditContextFactory : IAuditContextFactory
     {
         private readonly HttpContext _httpContext;
-        private DbContextOptions<AuditContext> _options;
+        private DbContextOptions _options;
 
         public AuditContextFactory(IHttpContextAccessor httpContentAccessor,
             DbContextOptions<AuditContext> options)
@@ -17,17 +17,28 @@ namespace EA.Audit.AuditService.Data
             _options = options;
         }
 
-        public AuditContext AuditContext => new AuditContext(_options, TenantId);
+        public AuditContext AuditContext
+        {
+            get
+            {
+                var scopes = _httpContext.User.FindFirst(c => c.Type == "scope").Value.Split(' ');
+                if (scopes.Any(s => s == "audit-api/audit_admin")){
+                    return new AuditContext(_options, true);
+                }
+                
+                return new AuditContext(_options, TenantId);
+            }
+        }
 
-        private Guid TenantId
+        private string TenantId
         {
             get
             {
                 ValidateHttpContext();
 
-                var tenantId = this._httpContext.Request.Headers[Constants.Tenant.TenantId].ToString();
+                var client_id = _httpContext.User.Claims.FirstOrDefault(c => c.Type == "client_id").Value;
 
-                return MarshallTenantId(tenantId);
+                return client_id;
             }
         }
 
@@ -38,20 +49,6 @@ namespace EA.Audit.AuditService.Data
                 throw new ArgumentNullException(nameof(this._httpContext));
             }
         }
-
-        private static Guid MarshallTenantId(string tenantId)
-        {
-            if (tenantId == null)
-            {
-                throw new ArgumentNullException(nameof(tenantId));
-            }
-
-            if (!Guid.TryParse(tenantId, out Guid tenantGuid))
-            {
-                throw new ArgumentNullException(nameof(tenantId));
-            }
-
-            return tenantGuid;
-        }
+       
     }
 }

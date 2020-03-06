@@ -43,10 +43,12 @@ namespace EA.Audit.AuditService.Application.Features.Application.Queries
 
         protected override PagedResponse<ApplicationDto> Handle(GetAuditApplicationsQuery request)
         {
+            int total = 0;
             if (request == null)
             {
                 var response = _mapper.ProjectTo<ApplicationDto>(_dbContext.AuditApplications).OrderBy(a => a.Id).ToList();
-                return new PagedResponse<ApplicationDto>(response);
+                total = _dbContext.AuditApplications.Count();
+                return new PagedResponse<ApplicationDto>(response, total);
             }
 
             _logger.LogInformation(
@@ -63,7 +65,8 @@ namespace EA.Audit.AuditService.Application.Features.Application.Queries
             var audits = _mapper.ProjectTo<ApplicationDto>(_dbContext.AuditApplications).OrderBy(a => a.Id)
                 .Skip(skip).Take(request.PageSize).ToList();
 
-            var paginationResponse = PaginationHelpers.CreatePaginatedResponse(_uriService, pagination, audits);
+            total = _dbContext.AuditApplications.Count();
+            var paginationResponse = PaginationHelpers.CreatePaginatedResponse(_uriService, pagination, audits, total);
 
             return paginationResponse;
 

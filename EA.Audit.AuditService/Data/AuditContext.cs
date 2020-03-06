@@ -12,38 +12,44 @@ using Microsoft.EntityFrameworkCore.Storage;
 namespace EA.Audit.AuditService.Data
 {
 
-    public class AuditContext : DbContext 
+    public class AuditContext : DbContext
     {
-        private readonly Guid _tenantId;
+        private readonly string _tenantId;
+        private readonly bool _isAdmin;
 
         private IDbContextTransaction _currentTransaction;
         public DbSet<AuditEntity> Audits { get; set; }
         public DbSet<AuditLevel> AuditLevels { get; set; }
         public DbSet<AuditType> AuditTypes { get; set; }
         public DbSet<ClientRequest> ClientRequests { get; set; }
-
         public DbSet<AuditApplication> AuditApplications { get; set; }
 
-        public AuditContext(DbContextOptions<AuditContext> options, Guid tenantId)
+        public AuditContext(DbContextOptions options, string tenantId)
             : base(options)
         {
             _tenantId = tenantId;
         }
 
+        public AuditContext(DbContextOptions options, bool IsAdmin)
+           : base(options)
+        {
+            _isAdmin = IsAdmin;
+        }
+
         public AuditContext(DbContextOptions<AuditContext> options)
-            :base(options)
+            : base(options)
         {
             ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<AuditEntity>().Property<Guid>("_tenantId").HasColumnName("TenantId");
-            modelBuilder.Entity<AuditEntity>().HasQueryFilter(b => EF.Property<Guid>(b, "_tenantId") == _tenantId);
+            modelBuilder.Entity<AuditEntity>().Property<string>("_tenantId").HasColumnName("TenantId");
+            modelBuilder.Entity<AuditEntity>().HasQueryFilter(b => _isAdmin || EF.Property<string>(b, "_tenantId") == _tenantId);
 
-            modelBuilder.Entity<AuditApplication>().Property<Guid>("_tenantId").HasColumnName("TenantId");
-            modelBuilder.Entity<AuditApplication>().HasQueryFilter(b => EF.Property<Guid>(b, "_tenantId") == _tenantId);
-
+            modelBuilder.Entity<AuditApplication>().Property<string>("_tenantId").HasColumnName("TenantId");
+            modelBuilder.Entity<AuditApplication>().HasQueryFilter(b => _isAdmin || EF.Property<string>(b, "_tenantId") == _tenantId);
+ 
             base.OnModelCreating(modelBuilder);
         }
 

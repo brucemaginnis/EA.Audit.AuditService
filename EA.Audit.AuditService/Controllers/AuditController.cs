@@ -8,6 +8,7 @@ using EA.Audit.AuditService.Application.Extensions;
 using EA.Audit.AuditService.Application.Features.Shared;
 using EA.Audit.AuditService.Application.Features.Audits.Queries;
 using EA.Audit.AuditService.Application.Features.Audits.Commands;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EA.Audit.AuditService.Controllers
 {
@@ -26,20 +27,15 @@ namespace EA.Audit.AuditService.Controllers
         }
 
         [HttpGet(ApiRoutes.Audits.GetAll)]
-        /*[Authorize]*/
+        [Authorize("audit-api/read_audits")]
         public async Task<ActionResult> GetAuditsAsync([FromQuery]GetAuditsQuery request)
         {
-            //Shifted Auth to API Gateway
-            //Extract the Auth Token and identify the calling app
-            //Audit events will be restricted to each app            
-            //var authenticateInfo = await HttpContext.AuthenticateAsync("Bearer").ConfigureAwait(false);
-            //string accessToken = authenticateInfo.Properties.Items[".Token.access_token"];
             var audits = await _mediator.Send(request).ConfigureAwait(false);
             return Ok(audits);
         }
 
         [HttpGet(ApiRoutes.Audits.Get)]
-        /*[Authorize]*/
+        [Authorize("audit-api/read_audits")]
         public async Task<ActionResult> GetAuditAsync(int id)
         { 
             var audit = await _mediator.Send(new GetAuditDetailsQuery() { Id = id });
@@ -51,7 +47,7 @@ namespace EA.Audit.AuditService.Controllers
          * CONSIDER PULLING INTO SEPARATE API FOR SCALING INDEPENDENT OF READ
          * ********************************************************************/
         [HttpPost(ApiRoutes.Audits.Create)]
-        /*[Authorize]*/
+        [Authorize("audit-api/create_audit")]
         public async Task<IActionResult> CreateAuditAsync([FromBody]CreateAuditCommand command, [FromHeader(Name = "x-requestid")] string requestId)
         {
             int commandResult = -1;

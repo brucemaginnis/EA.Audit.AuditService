@@ -7,6 +7,7 @@ using EA.Audit.AuditService.Infrastructure;
 using EA.Audit.AuditService.Application.Features.Shared;
 using EA.Audit.AuditService.Application.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 namespace EA.Audit.AuditService.Application.Features.Audits.Queries
 { 
@@ -43,6 +44,7 @@ namespace EA.Audit.AuditService.Application.Features.Audits.Queries
 
         protected override PagedResponse<AuditDto> Handle(GetAuditsQuery request)
         {
+            int total = 0;
             _logger.LogInformation(
                         "----- Handling query: {RequestName} - ({@Request})",
                         request.GetGenericTypeName(),
@@ -51,7 +53,8 @@ namespace EA.Audit.AuditService.Application.Features.Audits.Queries
             if (request == null)
             {
                 var response = _mapper.ProjectTo<AuditDto>(_dbContext.Audits).OrderBy(a => a.Id).ToList();
-                return new PagedResponse<AuditDto>(response);
+                total = _dbContext.Audits.Count();
+                return new PagedResponse<AuditDto>(response, total);
             }
 
             var pagination = _mapper.Map<PaginationFilter>(request);
@@ -62,7 +65,8 @@ namespace EA.Audit.AuditService.Application.Features.Audits.Queries
             var audits = _mapper.ProjectTo<AuditDto>(_dbContext.Audits).OrderBy(a => a.Id)
                 .Skip(skip).Take(request.PageSize).ToList();
 
-            var paginationResponse = PaginationHelpers.CreatePaginatedResponse(_uriService, pagination, audits);
+            total = _dbContext.Audits.Count();
+            var paginationResponse = PaginationHelpers.CreatePaginatedResponse(_uriService, pagination, audits, total);
 
             return paginationResponse;
     

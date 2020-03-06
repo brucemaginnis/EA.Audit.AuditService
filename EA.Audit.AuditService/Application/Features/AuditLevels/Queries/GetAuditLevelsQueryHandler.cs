@@ -43,10 +43,12 @@ namespace EA.Audit.AuditService.Application.Features.AuditLevels.Queries
 
         protected override PagedResponse<AuditLevelDto> Handle(GetAuditLevelsQuery request)
         {
+            int total = 0;
             if (request == null)
             {
                 var response = _mapper.ProjectTo<AuditLevelDto>(_dbContext.AuditLevels).OrderBy(a => a.Id).ToList();
-                return new PagedResponse<AuditLevelDto>(response);
+                total = _dbContext.AuditLevels.Count();
+                return new PagedResponse<AuditLevelDto>(response, total);
             }
 
             _logger.LogInformation(
@@ -57,13 +59,12 @@ namespace EA.Audit.AuditService.Application.Features.AuditLevels.Queries
             var pagination = _mapper.Map<PaginationFilter>(request);
 
             var skip = (request.PageNumber) * request.PageSize;
-            var query = _mapper.ProjectTo<AuditLevelDto>(_dbContext.AuditLevels).OrderBy(a => a.Id)
-                .Skip(skip).Take(request.PageSize).ToSql();
 
             var audits = _mapper.ProjectTo<AuditLevelDto>(_dbContext.AuditLevels).OrderBy(a => a.Id)
                 .Skip(skip).Take(request.PageSize).ToList();
 
-            var paginationResponse = PaginationHelpers.CreatePaginatedResponse(_uriService, pagination, audits);
+            total = _dbContext.AuditLevels.Count();
+            var paginationResponse = PaginationHelpers.CreatePaginatedResponse(_uriService, pagination, audits, total);
 
             return paginationResponse;
 
