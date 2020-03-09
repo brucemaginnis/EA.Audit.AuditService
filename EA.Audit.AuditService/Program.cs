@@ -18,7 +18,7 @@ namespace EA.Audit.AuditService
             Host.CreateDefaultBuilder(args)
                 .ConfigureLogging((context, logging) =>
                 {
-                    logging.AddEventLog();
+                    logging.AddConsole();
                 })
                 .UseCloudHosting()
                 .AddCloudFoundry()

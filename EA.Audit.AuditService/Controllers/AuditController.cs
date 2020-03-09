@@ -74,7 +74,7 @@ namespace EA.Audit.AuditService.Controllers
 
 
         [HttpGet(ApiRoutes.Audits.Search)]
-        /*[Authorize]*/
+        [Authorize("audit-api/read_audits")]
         public async Task<ActionResult> SearchAuditsAsync([FromQuery]SearchAuditsQuery request)
         {
             var audits = await _mediator.Send(request).ConfigureAwait(false);

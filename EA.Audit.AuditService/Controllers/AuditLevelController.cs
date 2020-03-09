@@ -4,6 +4,7 @@ using EA.Audit.AuditService.Application.Features.Shared;
 using EA.Audit.AuditService.AuditLevels.Commands;
 using EA.Audit.AuditService.Infrastructure;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -26,7 +27,7 @@ namespace EA.Audit.AuditService.Controllers
         }
 
         [HttpGet(ApiRoutes.AuditLevels.GetAll)]
-        /*[Authorize]*/
+        [Authorize("audit-api/audit_admin")]
         public async Task<ActionResult> GetAuditLevelsAsync([FromQuery]GetAuditLevelsQuery request)
         {
             var auditLevels = await _mediator.Send(request).ConfigureAwait(false);
@@ -34,7 +35,7 @@ namespace EA.Audit.AuditService.Controllers
         }
 
         [HttpGet(ApiRoutes.AuditLevels.Get)]
-        /*[Authorize]*/
+        [Authorize("audit-api/audit_admin")]
         public async Task<ActionResult> GetAuditLevelAsync(int id)
         {
             var audit = await _mediator.Send(new GetAuditLevelDetailsQuery() { Id = id });
@@ -43,7 +44,7 @@ namespace EA.Audit.AuditService.Controllers
 
 
         [HttpPost(ApiRoutes.AuditLevels.Create)]
-        /*[Authorize]*/
+        [Authorize("audit-api/audit_admin")]
         public async Task<IActionResult> CreateAuditLevelAsync([FromBody]CreateAuditLevelCommand command, [FromHeader(Name = "x-requestid")] string requestId)
         {
             int commandResult = -1;

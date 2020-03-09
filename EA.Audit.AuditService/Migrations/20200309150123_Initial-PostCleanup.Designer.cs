@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EA.Audit.AuditService.Migrations
 {
     [DbContext(typeof(AuditContext))]
-    [Migration("20200217124710_Updated")]
-    partial class Updated
+    [Migration("20200309150123_Initial-PostCleanup")]
+    partial class InitialPostCleanup
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -19,7 +19,7 @@ namespace EA.Audit.AuditService.Migrations
                 .HasAnnotation("ProductVersion", "3.1.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            modelBuilder.Entity("AuditService.Infrastructure.Idempotency.ClientRequest", b =>
+            modelBuilder.Entity("EA.Audit.AuditService.Infrastructure.Idempotency.ClientRequest", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -36,11 +36,45 @@ namespace EA.Audit.AuditService.Migrations
                     b.ToTable("ClientRequests");
                 });
 
-            modelBuilder.Entity("AuditService.Models.Audit", b =>
+            modelBuilder.Entity("EA.Audit.AuditService.Model.Admin.AuditApplication", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnName("ApplicationID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("_tenantId")
+                        .HasColumnName("TenantId")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AuditApplications");
+                });
+
+            modelBuilder.Entity("EA.Audit.AuditService.Models.AuditEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnName("AuditID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ApplicationId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("AuditApplicationId")
                         .HasColumnType("int");
 
                     b.Property<int>("AuditLevelId")
@@ -52,13 +86,22 @@ namespace EA.Audit.AuditService.Migrations
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("Details")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("Source")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
+                    b.Property<string>("_tenantId")
+                        .HasColumnName("TenantId")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("AuditApplicationId");
 
                     b.HasIndex("AuditLevelId");
 
@@ -67,14 +110,23 @@ namespace EA.Audit.AuditService.Migrations
                     b.ToTable("Audits");
                 });
 
-            modelBuilder.Entity("AuditService.Models.AuditLevel", b =>
+            modelBuilder.Entity("EA.Audit.AuditService.Models.AuditLevel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnName("AuditLevelID")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("Description")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Name")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
@@ -82,14 +134,23 @@ namespace EA.Audit.AuditService.Migrations
                     b.ToTable("AuditLevels");
                 });
 
-            modelBuilder.Entity("AuditService.Models.AuditType", b =>
+            modelBuilder.Entity("EA.Audit.AuditService.Models.AuditType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnName("AuditTypeID")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("Description")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Name")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
@@ -97,15 +158,19 @@ namespace EA.Audit.AuditService.Migrations
                     b.ToTable("AuditTypes");
                 });
 
-            modelBuilder.Entity("AuditService.Models.Audit", b =>
+            modelBuilder.Entity("EA.Audit.AuditService.Models.AuditEntity", b =>
                 {
-                    b.HasOne("AuditService.Models.AuditLevel", "AuditLevel")
+                    b.HasOne("EA.Audit.AuditService.Model.Admin.AuditApplication", "AuditApplication")
+                        .WithMany()
+                        .HasForeignKey("AuditApplicationId");
+
+                    b.HasOne("EA.Audit.AuditService.Models.AuditLevel", "AuditLevel")
                         .WithMany()
                         .HasForeignKey("AuditLevelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("AuditService.Models.AuditType", "AuditType")
+                    b.HasOne("EA.Audit.AuditService.Models.AuditType", "AuditType")
                         .WithMany()
                         .HasForeignKey("AuditTypeId")
                         .OnDelete(DeleteBehavior.Cascade)

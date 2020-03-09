@@ -21,11 +21,14 @@ namespace EA.Audit.AuditService.Data
         {
             get
             {
-                var scopes = _httpContext.User.FindFirst(c => c.Type == "scope").Value.Split(' ');
-                if (scopes.Any(s => s == "audit-api/audit_admin")){
-                    return new AuditContext(_options, true);
+                var scopes = _httpContext.User.FindFirst(c => c.Type == "scope");
+                if (scopes != null) {
+                    if (scopes.Value.Split(' ').Any(s => s == "audit-api/audit_admin"))
+                    {
+                        return new AuditContext(_options, true);
+                    }                    
                 }
-                
+                                
                 return new AuditContext(_options, TenantId);
             }
         }
@@ -36,7 +39,7 @@ namespace EA.Audit.AuditService.Data
             {
                 ValidateHttpContext();
 
-                var client_id = _httpContext.User.Claims.FirstOrDefault(c => c.Type == "client_id").Value;
+                var client_id = _httpContext.User.Claims.FirstOrDefault(c => c.Type == "client_id")?.Value;
 
                 return client_id;
             }

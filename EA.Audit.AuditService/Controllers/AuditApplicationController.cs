@@ -4,6 +4,7 @@ using EA.Audit.AuditService.Application.Features.Application.Queries;
 using EA.Audit.AuditService.Application.Features.Shared;
 using EA.Audit.AuditService.Infrastructure;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -26,7 +27,7 @@ namespace EA.Audit.AuditService.Controllers
         }
 
         [HttpGet(ApiRoutes.AuditApplications.GetAll)]
-        /*[Authorize]*/
+        [Authorize("audit-api/audit_admin")]
         public async Task<ActionResult> GetAuditApplicationsAsync([FromQuery]GetAuditApplicationsQuery request)
         {
             var audits = await _mediator.Send(request).ConfigureAwait(false);
@@ -34,7 +35,7 @@ namespace EA.Audit.AuditService.Controllers
         }
 
         [HttpGet(ApiRoutes.AuditApplications.Get)]
-        /*[Authorize]*/
+        [Authorize("audit-api/audit_admin")]
         public async Task<ActionResult> GetAuditApplicationAsync(int id)
         {
             var audit = await _mediator.Send(new GetAuditApplicationDetailsQuery() { Id = id }).ConfigureAwait(false);
@@ -42,7 +43,7 @@ namespace EA.Audit.AuditService.Controllers
         }
 
         [HttpPost(ApiRoutes.AuditApplications.Create)]
-        /*[Authorize]*/
+        [Authorize("audit-api/audit_admin")]
         public async Task<IActionResult> CreateAuditApplicationAsync([FromBody]CreateAuditApplicationCommand command, [FromHeader(Name = "x-requestid")] string requestId)
         {
             int commandResult = -1;

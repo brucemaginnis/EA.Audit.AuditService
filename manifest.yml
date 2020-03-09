@@ -4,5 +4,5 @@ applications:
   buildpacks:
   - dotnet_core_buildpack
   memory: 256M
-    services:
+  services:
   - audit-mysql-service
