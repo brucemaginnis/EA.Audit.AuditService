@@ -21,35 +21,44 @@ namespace EA.Audit.AuditService.Data
         {
             get
             {
-                var scopes = _httpContext.User.FindFirst(c => c.Type == "scope");
-                if (scopes != null) {
-                    if (scopes.Value.Split(' ').Any(s => s == "audit-api/audit_admin"))
-                    {
-                        return new AuditContext(_options, true);
-                    }                    
+                ValidateHttpContext();
+
+                if (IsAdmin(_httpContext))
+                {
+                    //Admin Context
+                    return new AuditContext(_options, true);
                 }
-                                
-                return new AuditContext(_options, TenantId);
+
+                var clientId = GetClientId(_httpContext);
+                return new AuditContext(_options, clientId);
             }
         }
 
-        private string TenantId
+        private string GetClientId(HttpContext httpContext)
         {
-            get
+            var clientId = _httpContext.User.Claims.FirstOrDefault(c => c.Type == "client_id")?.Value;
+            return clientId;
+        }
+
+        private bool IsAdmin(HttpContext httpContext)
+        {
+            var scopes = _httpContext.User.FindFirst(c => c.Type == "scope");
+            if (scopes != null)
             {
-                ValidateHttpContext();
-
-                var client_id = _httpContext.User.Claims.FirstOrDefault(c => c.Type == "client_id")?.Value;
-
-                return client_id;
+                if (scopes.Value.Split(' ').Any(s => s == "audit-api/audit_admin"))
+                {
+                    return true;
+                }
             }
+
+            return false;
         }
 
         private void ValidateHttpContext()
         {
             if (this._httpContext == null)
             {
-                throw new ArgumentNullException(nameof(this._httpContext));
+                throw new ArgumentNullException(nameof(_httpContext));
             }
         }
        

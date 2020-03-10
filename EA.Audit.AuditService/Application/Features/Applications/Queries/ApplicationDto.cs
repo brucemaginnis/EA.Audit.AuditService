@@ -6,7 +6,7 @@ namespace EA.Audit.AuditService.Application.Features.Application.Queries
     public class ApplicationDto
     {
         [Display(Name = "ApplicationId")]
-        public int Id { get; set; }
+        public long Id { get; set; }
 
         [DisplayFormat(DataFormatString = "{0:dd-MM-yyyy}")]
         public DateTime DateCreated { get; set; }

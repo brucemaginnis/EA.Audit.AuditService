@@ -17,18 +17,18 @@ namespace EA.Audit.AuditService.Application.Features.Audits.Queries
             PageNumber = 1;
             PageSize = 100;
         }
-        public SearchAuditsQuery(string sourceContains, string detailsContains, int pageNumber, int pageSize)
+        public SearchAuditsQuery(string descriptionContains, string propertiesContains, int pageNumber, int pageSize)
         {
-            SourceContains = sourceContains;
-            DetailsContains = detailsContains;
+            DescriptionContains = descriptionContains;
+            PropertiesContains = propertiesContains;
             PageNumber = pageNumber;
             PageSize = pageSize;
         }
         public int PageNumber { get; set; }
         public int PageSize { get; set; }
 
-        public string SourceContains { get; set; }
-        public string DetailsContains { get; set; }
+        public string DescriptionContains { get; set; }
+        public string PropertiesContains { get; set; }
     }
 
     public class SearchAuditsQueryHandler : RequestHandler<SearchAuditsQuery, PagedResponse<AuditDto>>
@@ -66,8 +66,8 @@ namespace EA.Audit.AuditService.Application.Features.Audits.Queries
             var skip = (request.PageNumber) * request.PageSize;
 
             var audits = _mapper.ProjectTo<AuditDto>(_dbContext.Audits)
-                .Where(a => string.IsNullOrEmpty(request.DetailsContains) || a.Details.Contains(request.DetailsContains))
-                .Where(a => string.IsNullOrEmpty(request.SourceContains) || a.Source.Contains(request.SourceContains))
+                .Where(a => string.IsNullOrEmpty(request.DescriptionContains) || a.Description.Contains(request.DescriptionContains))
+                .Where(a => string.IsNullOrEmpty(request.PropertiesContains) || a.Properties.Contains(request.PropertiesContains))
                 .OrderBy(a => a.Id)
                 .Skip(skip).Take(request.PageSize).ToList();
 

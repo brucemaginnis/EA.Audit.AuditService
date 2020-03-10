@@ -38,7 +38,7 @@ namespace EA.Audit.AuditService.Controllers
         [Authorize("audit-api/read_audits")]
         public async Task<ActionResult> GetAuditAsync(int id)
         { 
-            var audit = await _mediator.Send(new GetAuditDetailsQuery() { Id = id });
+            var audit = await _mediator.Send(new GetAuditDetailsQuery() { Id = id }).ConfigureAwait(false);
             return Ok(audit);
         }
 
@@ -50,11 +50,11 @@ namespace EA.Audit.AuditService.Controllers
         [Authorize("audit-api/create_audit")]
         public async Task<IActionResult> CreateAuditAsync([FromBody]CreateAuditCommand command, [FromHeader(Name = "x-requestid")] string requestId)
         {
-            int commandResult = -1;
+            long commandResult = -1;
 
             if (Guid.TryParse(requestId, out Guid guid) && guid != Guid.Empty)
             {
-                var requestCreateAudit = new IdentifiedCommand<CreateAuditCommand, int>(command, guid);
+                var requestCreateAudit = new IdentifiedCommand<CreateAuditCommand, long>(command, guid);
 
                 _logger.LogInformation(
                     "----- Sending command: {CommandName} - ({@Command})",

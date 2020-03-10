@@ -9,8 +9,8 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-
-
+using Microsoft.AspNetCore.Http;
+using System.Linq;
 
 namespace EA.Audit.AuditService.Application.Features.Audits.Commands
 {
@@ -20,28 +20,28 @@ namespace EA.Audit.AuditService.Application.Features.Audits.Commands
      * A SEPARATE BACKGROUND PROCESS SHOULD READ FROM THE QUEUE AND
      * PERSIST TO THE MYSQL DB (Don't yet have Queues in PaaS...or the expected loads)
      * ******************************************************************************/
-    public class CreateAuditCommand : IRequest<int>
+    public class CreateAuditCommand : IRequest<long>
     {
         public CreateAuditCommand()
         {
 
         }
 
-        public CreateAuditCommand(DateTime dateCreated, int applicationId, int auditTypeId, string source, int auditLevelId, string details)
+        public CreateAuditCommand(long subjectId, string subject, long actorId, string actor, string description, string properties)
         {
-            DateCreated = dateCreated;
-            ApplicationId = applicationId;
-            AuditTypeId = auditTypeId;
-            Source = source;
-            AuditLevelId = auditLevelId;
-            Details = details;
+            SubjectId = subjectId;
+            Subject = subject;
+            ActorId = actorId;
+            Actor = actor;
+            Description = description;
+            Properties = properties;
         }
-        public DateTime DateCreated { get; set; }
-        public int ApplicationId { get; set; }
-        public int AuditTypeId { get; set; }
-        public string Source { get; set; }        
-        public int AuditLevelId { get; set; }
-        public string Details { get; set; }
+        public long SubjectId { get; set; }
+        public string Subject { get; set; }
+        public long ActorId { get; set; }
+        public string Actor { get; set; }
+        public string Description { get; set; }    
+        public string Properties { get; set; }
 
     }
 
@@ -49,25 +49,47 @@ namespace EA.Audit.AuditService.Application.Features.Audits.Commands
         {
             public CreateAuditValidator()
             {
-                RuleFor(m => m.Details).NotNull().Length(0, 1000);
-                RuleFor(m => m.Source).NotNull().Length(0, 500);
+                RuleFor(m => m.Subject).NotNull().Length(0, 500);
+                RuleFor(m => m.Actor).NotNull().Length(0, 500);
+                RuleFor(m => m.Description).NotNull().Length(0, 1000);
+                RuleFor(m => m.Properties).NotNull().Length(0, 1000);
             }
         }
     
-    public class CreateAuditCommandHandler : IRequestHandler<CreateAuditCommand, int>
+    public class CreateAuditCommandHandler : IRequestHandler<CreateAuditCommand, long>
     {
+        private const string NoClientIdFound = "No ClientId on HttpContext";
+        private const string NoApplicationFound = "No Application found for ClientId";
+        private readonly HttpContext _httpContext;
         private readonly AuditContext _dbContext;
         private readonly IMapper _mapper;
 
-        public CreateAuditCommandHandler(IAuditContextFactory dbContextFactory, IMapper mapper)
+        public CreateAuditCommandHandler(IAuditContextFactory dbContextFactory, IMapper mapper, IHttpContextAccessor httpContentAccessor)
         {
             _dbContext = dbContextFactory.AuditContext;
             _mapper = mapper;
+            _httpContext = httpContentAccessor.HttpContext;
         }
 
-        public async Task<int> Handle(CreateAuditCommand request, CancellationToken cancellationToken)
+        public async Task<long> Handle(CreateAuditCommand request, CancellationToken cancellationToken)
         {
             var audit = _mapper.Map<CreateAuditCommand, AuditEntity>(request);
+
+            //Get Client Id from Token and lookup Application
+            var clientId = _httpContext.User.Claims.FirstOrDefault(c => c.Type == "client_id")?.Value;
+
+            if(clientId == null)
+            {
+                throw new Exception(NoClientIdFound);
+            }
+
+            var auditApplication = _dbContext.AuditApplications.FirstOrDefault(a => a.ClientId == clientId);
+            if(auditApplication == null)
+            {
+                throw new Exception(NoApplicationFound);
+            }
+
+            audit.AuditApplication = auditApplication;
 
             _dbContext.Audits.Add(audit);
 
@@ -78,17 +100,17 @@ namespace EA.Audit.AuditService.Application.Features.Audits.Commands
     }
 
 
-    public class CreateAuditIdentifiedCommandHandler : IdentifiedCommandHandler<CreateAuditCommand, int>
+    public class CreateAuditIdentifiedCommandHandler : IdentifiedCommandHandler<CreateAuditCommand, long>
     {
         public CreateAuditIdentifiedCommandHandler(
             IMediator mediator,
             IRequestManager requestManager,
-            ILogger<IdentifiedCommandHandler<CreateAuditCommand, int>> logger)
+            ILogger<IdentifiedCommandHandler<CreateAuditCommand, long>> logger)
             : base(mediator, requestManager, logger)
         {
         }
 
-        protected override int CreateResultForDuplicateRequest()
+        protected override long CreateResultForDuplicateRequest()
         {
             return -1;                // Ignore duplicate requests for processing create audit.
         }

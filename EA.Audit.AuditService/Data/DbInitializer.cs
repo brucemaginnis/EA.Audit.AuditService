@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using EA.Audit.AuditService.Model.Admin;
 using EA.Audit.AuditService.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +11,7 @@ namespace EA.Audit.AuditService.Data
         public static void Initialize(AuditContext context)
         {
             context.Database.EnsureCreated();
+            context.ClientId = "3inpv3ubfmag4k97cu5iqsesg8";
 
             // Look for any audits.
             if (context.Audits.IgnoreQueryFilters().Any())
@@ -17,46 +19,32 @@ namespace EA.Audit.AuditService.Data
                 return;   // DB has been seeded
             }
 
-            //Audit Types
-            var auditTypes = new AuditType[]
+            //Audit Application
+            var application = new AuditApplication()
             {
-                new AuditType { Id = 1, Description = "Audit Event Type 1" },
-                new AuditType { Id = 2, Description = "Audit Event Type 2" },
-                new AuditType { Id = 3, Description = "Audit Event Type 3" }
+                Id = 123456,
+                DateCreated = DateTime.Now,
+                DateModified = DateTime.Now,
+                Description = "Test Audit Application",
+                Name = "TestAuditApplication",
+                ClientId = "3inpv3ubfmag4k97cu5iqsesg8"
             };
 
-            foreach (AuditType s in auditTypes)
-            {
-                context.AuditTypes.Add(s);
-            }
-            context.SaveChanges();
-
-           //Audit Levels
-           var auditLevels = new AuditLevel[]
-            {
-                new AuditLevel { Id = 1, Description = "Information" },
-                new AuditLevel { Id = 2, Description = "Warning" },
-                new AuditLevel { Id = 3, Description = "Critical" }
-            };
-
-            foreach (AuditLevel s in auditLevels)
-            {
-                context.AuditLevels.Add(s);
-            }
+            context.AuditApplications.Add(application);
             context.SaveChanges();
 
             var audits = new AuditEntity[]
             {
-                new AuditEntity { Id = 1, DateCreated = DateTime.Now, AuditTypeId = auditTypes.Single(a => a.Id == 1).Id, AuditLevelId = auditLevels.Single(a => a.Id == 1).Id, Source = "Courts", Details = "some payload or something" },
-                new AuditEntity { Id = 2, DateCreated = DateTime.Now, AuditTypeId = auditTypes.Single(a => a.Id == 2).Id, AuditLevelId = auditLevels.Single(a => a.Id == 2).Id, Source = "Courts", Details = "some payload or something" },
-                new AuditEntity { Id = 3, DateCreated = DateTime.Now, AuditTypeId = auditTypes.Single(a => a.Id == 3).Id, AuditLevelId = auditLevels.Single(a => a.Id == 3).Id, Source = "Courts", Details = "some payload or something" },
-                new AuditEntity { Id = 4, DateCreated = DateTime.Now, AuditTypeId = auditTypes.Single(a => a.Id == 1).Id, AuditLevelId = auditLevels.Single(a => a.Id == 1).Id, Source = "Courts", Details = "some payload or something" },
-                new AuditEntity { Id = 5, DateCreated = DateTime.Now, AuditTypeId = auditTypes.Single(a => a.Id == 2).Id, AuditLevelId = auditLevels.Single(a => a.Id == 2).Id, Source = "Courts", Details = "some payload or something" },
-                new AuditEntity { Id = 6, DateCreated = DateTime.Now, AuditTypeId = auditTypes.Single(a => a.Id == 3).Id, AuditLevelId = auditLevels.Single(a => a.Id == 3).Id, Source = "Courts", Details = "some payload or something" },
-                new AuditEntity { Id = 7, DateCreated = DateTime.Now, AuditTypeId = auditTypes.Single(a => a.Id == 1).Id, AuditLevelId = auditLevels.Single(a => a.Id == 1).Id, Source = "Courts", Details = "some payload or something" },
-                new AuditEntity { Id = 8, DateCreated = DateTime.Now, AuditTypeId = auditTypes.Single(a => a.Id == 2).Id, AuditLevelId = auditLevels.Single(a => a.Id == 2).Id, Source = "Courts", Details = "some payload or something" },
-                new AuditEntity { Id = 9, DateCreated = DateTime.Now, AuditTypeId = auditTypes.Single(a => a.Id == 3).Id, AuditLevelId = auditLevels.Single(a => a.Id == 3).Id, Source = "Courts", Details = "some payload or something" },
-                new AuditEntity { Id = 10, DateCreated = DateTime.Now, AuditTypeId = auditTypes.Single(a => a.Id == 1).Id, AuditLevelId = auditLevels.Single(a => a.Id == 1).Id, Source = "Courts", Details = "some payload or something" }
+                new AuditEntity { Id = 1, DateCreated = DateTime.Now, AuditApplication = application,ClientId = "3inpv3ubfmag4k97cu5iqsesg8", SubjectId = 123456789, Subject = "Subject Info", ActorId = 987654321, Actor = "Actor Info", Description = "Subject updated", Properties = "{json: 'stuff'}" },
+                new AuditEntity { Id = 2, DateCreated = DateTime.Now, AuditApplication = application,ClientId = "3inpv3ubfmag4k97cu5iqsesg8", SubjectId = 123456789, Subject = "Subject Info", ActorId = 987654321, Actor = "Actor Info", Description = "Subject updated", Properties = "{json: 'stuff'}" },
+                new AuditEntity { Id = 3, DateCreated = DateTime.Now, AuditApplication = application,ClientId = "3inpv3ubfmag4k97cu5iqsesg8", SubjectId = 123456789, Subject = "Subject Info", ActorId = 987654321, Actor = "Actor Info", Description = "Subject updated", Properties = "{json: 'stuff'}" },
+                new AuditEntity { Id = 4, DateCreated = DateTime.Now, AuditApplication = application,ClientId = "3inpv3ubfmag4k97cu5iqsesg8", SubjectId = 123456789, Subject = "Subject Info", ActorId = 987654321, Actor = "Actor Info", Description = "Subject updated", Properties = "{json: 'stuff'}" },
+                new AuditEntity { Id = 5, DateCreated = DateTime.Now, AuditApplication = application,ClientId = "3inpv3ubfmag4k97cu5iqsesg8", SubjectId = 123456789, Subject = "Subject Info", ActorId = 987654321, Actor = "Actor Info", Description = "Subject updated", Properties = "{json: 'stuff'}" },
+                new AuditEntity { Id = 6, DateCreated = DateTime.Now, AuditApplication = application,ClientId = "3inpv3ubfmag4k97cu5iqsesg8", SubjectId = 123456789, Subject = "Subject Info", ActorId = 987654321, Actor = "Actor Info", Description = "Subject updated", Properties = "{json: 'stuff'}" },
+                new AuditEntity { Id = 7, DateCreated = DateTime.Now, AuditApplication = application,ClientId = "3inpv3ubfmag4k97cu5iqsesg8", SubjectId = 123456789, Subject = "Subject Info", ActorId = 987654321, Actor = "Actor Info", Description = "Subject updated", Properties = "{json: 'stuff'}" },
+                new AuditEntity { Id = 8, DateCreated = DateTime.Now, AuditApplication = application,ClientId = "3inpv3ubfmag4k97cu5iqsesg8", SubjectId = 123456789, Subject = "Subject Info", ActorId = 987654321, Actor = "Actor Info", Description = "Subject updated", Properties = "{json: 'stuff'}" },
+                new AuditEntity { Id = 9, DateCreated = DateTime.Now, AuditApplication = application,ClientId = "3inpv3ubfmag4k97cu5iqsesg8", SubjectId = 123456789, Subject = "Subject Info", ActorId = 987654321, Actor = "Actor Info", Description = "Subject updated", Properties = "{json: 'stuff'}" },
+                new AuditEntity { Id = 10, DateCreated = DateTime.Now,AuditApplication = application,ClientId = "3inpv3ubfmag4k97cu5iqsesg8", SubjectId = 123456789, Subject = "Subject Info", ActorId = 987654321, Actor = "Actor Info", Description = "Subject updated", Properties = "{json: 'stuff'}" }
             };
 
             foreach (AuditEntity s in audits)

@@ -10,7 +10,7 @@ namespace EA.Audit.AuditService.Application.Features.Application.Queries
 
     public class GetAuditApplicationDetailsQuery : IRequest<ApplicationDto>
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
     }
 
     public class GetAuditLevelDetailsQueryHandler : RequestHandler<GetAuditApplicationDetailsQuery, ApplicationDto>

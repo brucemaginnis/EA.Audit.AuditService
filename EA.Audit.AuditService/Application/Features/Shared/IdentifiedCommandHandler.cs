@@ -42,14 +42,14 @@ namespace EA.Audit.AuditService.Application.Features.Shared
         /// <returns>Return value of inner command or default value if request same ID was found</returns>
         public async Task<R> Handle(IdentifiedCommand<T, R> message, CancellationToken cancellationToken)
         {
-            var alreadyExists = await _requestManager.ExistAsync(message.Id);
+            var alreadyExists = await _requestManager.ExistAsync(message.Id).ConfigureAwait(false);
             if (alreadyExists)
             {
                 return CreateResultForDuplicateRequest();
             }
             else
             {
-                await _requestManager.CreateRequestForCommandAsync<T>(message.Id);
+                await _requestManager.CreateRequestForCommandAsync<T>(message.Id).ConfigureAwait(false);
                 try
                 {
                     var command = message.Command;
@@ -69,7 +69,7 @@ namespace EA.Audit.AuditService.Application.Features.Shared
                         commandName,
                         command);
 
-                    var result = await _mediator.Send(command, cancellationToken);
+                    var result = await _mediator.Send(command, cancellationToken).ConfigureAwait(false);
 
                     _logger.LogInformation(
                         "----- Command result: {@Result} - {CommandName} - ({@Command})",

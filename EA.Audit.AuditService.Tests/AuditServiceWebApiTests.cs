@@ -29,8 +29,8 @@ namespace EA.Audit.AuditService.Tests
         public async Task Create_audit_with_requestId_success()
         {
             //Arrange
-            _mediatorMock.Setup(x => x.Send(It.IsAny<IdentifiedCommand<CreateAuditCommand, int>>(), default(CancellationToken)))
-                .Returns(Task.FromResult(10));
+            _mediatorMock.Setup(x => x.Send(It.IsAny<IdentifiedCommand<CreateAuditCommand, long>>(), default(CancellationToken)))
+                .Returns(Task.FromResult(10L));
 
             //Act
             var auditController = new AuditController(_loggerMock.Object, _mediatorMock.Object);
@@ -45,8 +45,8 @@ namespace EA.Audit.AuditService.Tests
         public async Task Create_audit_bad_request()
         {
             //Arrange
-            _mediatorMock.Setup(x => x.Send(It.IsAny<IdentifiedCommand<CreateAuditCommand, int>>(), default(CancellationToken)))
-                .Returns(Task.FromResult(10));
+            _mediatorMock.Setup(x => x.Send(It.IsAny<IdentifiedCommand<CreateAuditCommand, long>>(), default(CancellationToken)))
+                .Returns(Task.FromResult(10L));
 
             //Act
             var auditController = new AuditController(_loggerMock.Object, _mediatorMock.Object);

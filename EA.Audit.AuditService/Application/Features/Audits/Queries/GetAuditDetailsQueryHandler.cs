@@ -10,7 +10,7 @@ namespace EA.Audit.AuditService.Application.Features.Audits.Queries
 {
     public class GetAuditDetailsQuery : IRequest<AuditDto>
     { 
-        public int Id { get; set; }
+        public long Id { get; set; }
     }
     
     public class GetAuditDetailsQueryHandler : RequestHandler<GetAuditDetailsQuery, AuditDto>
@@ -33,10 +33,7 @@ namespace EA.Audit.AuditService.Application.Features.Audits.Queries
             request.GetGenericTypeName(),
             request);
 
-            return _mapper.Map<AuditDto>(_dbContext.Audits.Include(a => a.AuditApplication)
-                                                            .Include(a => a.AuditLevel)
-                                                            .Include(a => a.AuditType)
-                                                            .FirstOrDefault(a => a.Id == request.Id));
+            return _mapper.Map<AuditDto>(_dbContext.Audits.Include(a => a.AuditApplication).FirstOrDefault(a => a.Id == request.Id));
         }
     }
 }

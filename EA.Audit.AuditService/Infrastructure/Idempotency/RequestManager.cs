@@ -24,7 +24,7 @@ namespace EA.Audit.AuditService.Infrastructure.Idempotency
 
         public async Task CreateRequestForCommandAsync<T>(Guid id)
         {
-            var exists = await ExistAsync(id);
+            var exists = await ExistAsync(id).ConfigureAwait(false);
 
             var request = exists ?
                 throw new Exception($"Request with {id} already exists") :
@@ -37,7 +37,7 @@ namespace EA.Audit.AuditService.Infrastructure.Idempotency
 
             _context.Add(request);
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync().ConfigureAwait(false);
         }
     }
 }

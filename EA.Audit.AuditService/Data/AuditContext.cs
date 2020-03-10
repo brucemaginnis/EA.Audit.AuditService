@@ -14,20 +14,19 @@ namespace EA.Audit.AuditService.Data
 
     public class AuditContext : DbContext
     {
-        private readonly string _tenantId;
         private readonly bool _isAdmin;
 
         private IDbContextTransaction _currentTransaction;
         public DbSet<AuditEntity> Audits { get; set; }
-        public DbSet<AuditLevel> AuditLevels { get; set; }
-        public DbSet<AuditType> AuditTypes { get; set; }
-        public DbSet<ClientRequest> ClientRequests { get; set; }
         public DbSet<AuditApplication> AuditApplications { get; set; }
+        public DbSet<ClientRequest> ClientRequests { get; set; }
 
-        public AuditContext(DbContextOptions options, string tenantId)
+        public string ClientId { get; set; }
+
+        public AuditContext(DbContextOptions options, string clientId)
             : base(options)
         {
-            _tenantId = tenantId;
+            ClientId = clientId;
         }
 
         public AuditContext(DbContextOptions options, bool IsAdmin)
@@ -44,11 +43,9 @@ namespace EA.Audit.AuditService.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<AuditEntity>().Property<string>("_tenantId").HasColumnName("TenantId");
-            modelBuilder.Entity<AuditEntity>().HasQueryFilter(b => _isAdmin || EF.Property<string>(b, "_tenantId") == _tenantId);
+            modelBuilder.Entity<AuditEntity>().HasQueryFilter(b => _isAdmin || EF.Property<string>(b, nameof(ClientId)) == ClientId).HasOne(a => a.AuditApplication);
 
-            modelBuilder.Entity<AuditApplication>().Property<string>("_tenantId").HasColumnName("TenantId");
-            modelBuilder.Entity<AuditApplication>().HasQueryFilter(b => _isAdmin || EF.Property<string>(b, "_tenantId") == _tenantId);
+            modelBuilder.Entity<AuditApplication>().HasQueryFilter(b => _isAdmin || EF.Property<string>(b, nameof(ClientId)) == ClientId);
  
             base.OnModelCreating(modelBuilder);
         }
@@ -79,10 +76,12 @@ namespace EA.Audit.AuditService.Data
 
                 ((BaseEntity)entityEntry.Entity).DateCreated = DateTime.Now;
 
-                if (entityEntry.Metadata.GetProperties().Any(p => p.Name == "_tenantId"))
-                    entityEntry.CurrentValues["_tenantId"] = _tenantId;
+                if (entityEntry.Metadata.GetProperties().Any(p => p.Name == nameof(ClientId)))
+                {
+                    entityEntry.CurrentValues[nameof(ClientId)] = ClientId;                    
+                }
             }
-            return await base.SaveChangesAsync(cancellationToken);
+            return await base.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public override int SaveChanges()

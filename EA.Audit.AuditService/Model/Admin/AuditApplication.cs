@@ -1,5 +1,4 @@
 ﻿using EA.Audit.AuditService.Models;
-using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EA.Audit.AuditService.Model.Admin

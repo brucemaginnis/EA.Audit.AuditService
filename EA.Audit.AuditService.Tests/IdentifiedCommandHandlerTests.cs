@@ -17,13 +17,13 @@ namespace EA.Audit.AuditServiceTests.Application
     {
         private readonly Mock<IRequestManager> _requestManager;
         private readonly Mock<IMediator> _mediator;
-        private readonly Mock<ILogger<IdentifiedCommandHandler<CreateAuditCommand, int>>> _loggerMock;
+        private readonly Mock<ILogger<IdentifiedCommandHandler<CreateAuditCommand, long>>> _loggerMock;
 
         public IdentifiedCommandHandlerTest()
         {
             _requestManager = new Mock<IRequestManager>();
             _mediator = new Mock<IMediator>();
-            _loggerMock = new Mock<ILogger<IdentifiedCommandHandler<CreateAuditCommand, int>>>();
+            _loggerMock = new Mock<ILogger<IdentifiedCommandHandler<CreateAuditCommand, long>>>();
         }
 
         [Test]
@@ -31,22 +31,22 @@ namespace EA.Audit.AuditServiceTests.Application
         {
             // Arrange
             var fakeGuid = Guid.NewGuid();
-            var fakeAuditCmd = new IdentifiedCommand<CreateAuditCommand, int>(FakeAuditRequest(), fakeGuid);
+            var fakeAuditCmd = new IdentifiedCommand<CreateAuditCommand, long>(FakeAuditRequest(), fakeGuid);
 
             _requestManager.Setup(x => x.ExistAsync(It.IsAny<Guid>()))
                .Returns(Task.FromResult(false));
 
-            _mediator.Setup(x => x.Send(It.IsAny<IRequest<int>>(), default(CancellationToken)))
-               .Returns(Task.FromResult(10));
+            _mediator.Setup(x => x.Send(It.IsAny<IRequest<long>>(), default(CancellationToken)))
+               .Returns(Task.FromResult(10L));
 
             //Act
-            var handler = new IdentifiedCommandHandler<CreateAuditCommand, int>(_mediator.Object, _requestManager.Object, _loggerMock.Object);
+            var handler = new IdentifiedCommandHandler<CreateAuditCommand, long>(_mediator.Object, _requestManager.Object, _loggerMock.Object);
             var cltToken = new CancellationToken();
             var result = await handler.Handle(fakeAuditCmd, cltToken);
 
             //Assert
             Assert.True(result == 10);
-            _mediator.Verify(x => x.Send(It.IsAny<IRequest<int>>(), default(CancellationToken)), Times.Once());
+            _mediator.Verify(x => x.Send(It.IsAny<IRequest<long>>(), default(CancellationToken)), Times.Once());
         }
 
         [Test]
@@ -54,7 +54,7 @@ namespace EA.Audit.AuditServiceTests.Application
         {
             // Arrange
             var fakeGuid = Guid.NewGuid();
-            var fakeAuditCmd = new IdentifiedCommand<CreateAuditCommand, int>(FakeAuditRequest(), fakeGuid);
+            var fakeAuditCmd = new IdentifiedCommand<CreateAuditCommand, long>(FakeAuditRequest(), fakeGuid);
 
             _requestManager.Setup(x => x.ExistAsync(It.IsAny<Guid>()))
                .Returns(Task.FromResult(true));
@@ -63,7 +63,7 @@ namespace EA.Audit.AuditServiceTests.Application
                .Returns(Task.FromResult(true));
 
             //Act
-            var handler = new IdentifiedCommandHandler<CreateAuditCommand, int>(_mediator.Object, _requestManager.Object, _loggerMock.Object);
+            var handler = new IdentifiedCommandHandler<CreateAuditCommand, long>(_mediator.Object, _requestManager.Object, _loggerMock.Object);
             var cltToken = new CancellationToken();
             var result = await handler.Handle(fakeAuditCmd, cltToken);
 
@@ -75,13 +75,13 @@ namespace EA.Audit.AuditServiceTests.Application
         private CreateAuditCommand FakeAuditRequest(Dictionary<string, object> args = null)
         {
             return new CreateAuditCommand(
-                dateCreated: args != null && args.ContainsKey("dateCreated") ? (DateTime)args["dateCreated"] : DateTime.UtcNow,
-                applicationId: args != null && args.ContainsKey("applicationId") ? (int)args["applicationId"] : 0,
-                auditLevelId: args != null && args.ContainsKey("auditLevelId") ? (int)args["auditLevelId"] : 0,
-                source: args != null && args.ContainsKey("source") ? (string)args["source"] : null,
-                auditTypeId: args != null && args.ContainsKey("auditTypeId") ? (int)args["auditTypeId"] : 0,
-                details: args != null && args.ContainsKey("details") ? (string)args["details"] : null);
-               
+                subjectId: args != null && args.ContainsKey("subjectId") ? (int)args["subjectId"] : 0,
+                subject: args != null && args.ContainsKey("subject") ? (string)args["subject"] : null,
+                actorId: args != null && args.ContainsKey("actorId") ? (int)args["actorId"] : 0,
+                actor: args != null && args.ContainsKey("actor") ? (string)args["actor"] : null,
+                description: args != null && args.ContainsKey("description") ? (string)args["description"] : null,
+                properties: args != null && args.ContainsKey("properties") ? (string)args["properties"] : null);
+
         }
     }
 }

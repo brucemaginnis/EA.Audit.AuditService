@@ -6,7 +6,6 @@ using AutoMapper;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,15 +19,15 @@ namespace EA.Audit.AuditService.Application.Commands
 
         }
 
-        public CreateAuditApplicationCommand(DateTime dateCreated, string name, string description)
+        public CreateAuditApplicationCommand(string name, string description, string clientId)
         {
-            DateCreated = dateCreated;
             Name = name;
             Description = description;
+            ClientId = clientId;
         }
-        public DateTime DateCreated { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
+        public string ClientId { get; set; }
 
     }
 
@@ -38,6 +37,7 @@ namespace EA.Audit.AuditService.Application.Commands
         {
             RuleFor(m => m.Name).NotNull().Length(0, 500);
             RuleFor(m => m.Description).NotNull().Length(0, 500);
+            RuleFor(m => m.ClientId).NotNull().Length(0, 500);
         }
     }
 
@@ -55,6 +55,9 @@ namespace EA.Audit.AuditService.Application.Commands
         public async Task<int> Handle(CreateAuditApplicationCommand request, CancellationToken cancellationToken)
         {
             var app = _mapper.Map<CreateAuditApplicationCommand, AuditApplication>(request);
+            //Overwrite ClientId in context for Application as it will be supplied, 
+            //not derived from Token, as Token will be an Admin Token
+            _dbContext.ClientId = request.ClientId;
 
             _dbContext.AuditApplications.Add(app);
 
