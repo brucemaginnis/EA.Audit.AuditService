@@ -7,7 +7,7 @@ namespace EA.Audit.AuditService.Model.Admin
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("ApplicationID")]
-        public new int Id { get; set; }
+        public new long Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
     }

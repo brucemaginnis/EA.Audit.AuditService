@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace EA.Audit.AuditService.Application.Commands
 {
 
-    public class CreateAuditApplicationCommand : IRequest<int>
+    public class CreateAuditApplicationCommand : IRequest<long>
     {
         public CreateAuditApplicationCommand()
         {
@@ -41,7 +41,7 @@ namespace EA.Audit.AuditService.Application.Commands
         }
     }
 
-    public class CreateApplicationCommandHandler : IRequestHandler<CreateAuditApplicationCommand, int>
+    public class CreateApplicationCommandHandler : IRequestHandler<CreateAuditApplicationCommand, long>
     {
         private readonly AuditContext _dbContext;
         private readonly IMapper _mapper;
@@ -52,7 +52,7 @@ namespace EA.Audit.AuditService.Application.Commands
             _mapper = mapper;
         }
 
-        public async Task<int> Handle(CreateAuditApplicationCommand request, CancellationToken cancellationToken)
+        public async Task<long> Handle(CreateAuditApplicationCommand request, CancellationToken cancellationToken)
         {
             var app = _mapper.Map<CreateAuditApplicationCommand, AuditApplication>(request);
             //Overwrite ClientId in context for Application as it will be supplied, 
@@ -68,17 +68,17 @@ namespace EA.Audit.AuditService.Application.Commands
     }
 
 
-    public class CreateApplicationIdentifiedCommandHandler : IdentifiedCommandHandler<CreateAuditApplicationCommand, int>
+    public class CreateApplicationIdentifiedCommandHandler : IdentifiedCommandHandler<CreateAuditApplicationCommand, long>
     {
         public CreateApplicationIdentifiedCommandHandler(
             IMediator mediator,
             IRequestManager requestManager,
-            ILogger<IdentifiedCommandHandler<CreateAuditApplicationCommand, int>> logger)
+            ILogger<IdentifiedCommandHandler<CreateAuditApplicationCommand, long>> logger)
             : base(mediator, requestManager, logger)
         {
         }
 
-        protected override int CreateResultForDuplicateRequest()
+        protected override long CreateResultForDuplicateRequest()
         {
             return -1;                // Ignore duplicate requests for processing create audit.
         }

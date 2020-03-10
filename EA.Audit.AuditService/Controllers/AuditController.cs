@@ -14,7 +14,6 @@ namespace EA.Audit.AuditService.Controllers
 {
     [ApiController]
     [Produces("application/json")]
-    [AllowCrossSiteJson]
     public class AuditController : ControllerBase
     { 
         private readonly ILogger<AuditController> _logger;

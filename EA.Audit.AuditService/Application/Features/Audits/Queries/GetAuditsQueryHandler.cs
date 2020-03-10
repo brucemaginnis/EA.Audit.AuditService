@@ -62,7 +62,7 @@ namespace EA.Audit.AuditService.Application.Features.Audits.Queries
 
             var skip = (request.PageNumber) * request.PageSize;
 
-            var audits = _mapper.ProjectTo<AuditDto>(_dbContext.Audits).OrderBy(a => a.Id)
+            var audits = _mapper.ProjectTo<AuditDto>(_dbContext.Audits.Include(a => a.AuditApplication)).OrderBy(a => a.Id)
                 .Skip(skip).Take(request.PageSize).ToList();
 
             total = _dbContext.Audits.Count();

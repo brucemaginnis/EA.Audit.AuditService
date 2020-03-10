@@ -9,7 +9,7 @@ namespace EA.Audit.AuditService.Application.Features.Audits.Queries
     {
         [Display(Name = "AuditId")]
         public long Id { get; set; }
-        public AuditApplication Application { get; set; }
+        public AuditApplication AuditApplication { get; set; }
 
         [DisplayFormat(DataFormatString = "{0:dd-MM-yyyy}")]
         public DateTime DateCreated { get; set; }

@@ -14,7 +14,6 @@ namespace EA.Audit.AuditService.Controllers
 {
     [ApiController]
     [Produces("application/json")]
-    [AllowCrossSiteJson]
     public class AuditApplicationController : ControllerBase
     {
         private readonly ILogger<AuditApplicationController> _logger;
@@ -46,11 +45,11 @@ namespace EA.Audit.AuditService.Controllers
         [Authorize("audit-api/audit_admin")]
         public async Task<IActionResult> CreateAuditApplicationAsync([FromBody]CreateAuditApplicationCommand command, [FromHeader(Name = "x-requestid")] string requestId)
         {
-            int commandResult = -1;
+            long commandResult = -1;
 
             if (Guid.TryParse(requestId, out Guid guid) && guid != Guid.Empty)
             {
-                var requestCreateAuditApplication = new IdentifiedCommand<CreateAuditApplicationCommand, int>(command, guid);
+                var requestCreateAuditApplication = new IdentifiedCommand<CreateAuditApplicationCommand, long>(command, guid);
 
                 _logger.LogInformation(
                     "----- Sending command: {CommandName} - ({@Command})",
