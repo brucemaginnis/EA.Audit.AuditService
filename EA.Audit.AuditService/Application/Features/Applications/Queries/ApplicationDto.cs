@@ -12,5 +12,6 @@ namespace EA.Audit.AuditService.Application.Features.Application.Queries
         public DateTime DateCreated { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
+        public string ClientId { get; set; }
     }
 }
